@@ -19,7 +19,9 @@ async function run() {
     try {
         await client.connect();
         const partCollection = client.db('car_parts').collection('parts');
+        const userCollection = client.db('car_parts').collection('users');
 
+        // parts api
         app.get('/part', async (req, res) => {
             const query = {};
             const cursor = partCollection.find(query);
@@ -32,6 +34,19 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const part = await partCollection.findOne(query);
             res.send(part);
+        });
+
+        // users api
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
         });
     }
     finally {
