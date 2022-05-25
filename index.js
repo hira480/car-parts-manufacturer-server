@@ -52,6 +52,12 @@ async function run() {
             res.send(part);
         });
 
+        app.post('/part', async (req, res) => {
+            const newParts = req.body;
+            const result = await partCollection.insertOne(newParts);
+            res.send(result);
+        });
+
         app.put('/part/:id', async (req, res) => {
             const id = req.params.id;
             const query = ({ _id: ObjectId(id) });
