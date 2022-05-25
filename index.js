@@ -34,6 +34,7 @@ async function run() {
     try {
         await client.connect();
         const partCollection = client.db('car_parts').collection('parts');
+        const orderCollection = client.db('car_parts').collection('orders');
         const userCollection = client.db('car_parts').collection('users');
 
         // parts api
@@ -50,6 +51,27 @@ async function run() {
             const part = await partCollection.findOne(query);
             res.send(part);
         });
+
+        app.put('/part/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = ({ _id: ObjectId(id) });
+            const updateQuantity = req.body;
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    quantity: updateQuantity.deliveredQuantity,
+                },
+            };
+            const result = await partCollection.updateOne(query, updateDoc, options);
+            res.send(result);
+        });
+
+        // order api
+        app.post('/ordered', async (req, res) => {
+            const ordered = req.body;
+            const result = await orderCollection.insertOne(ordered);
+            res.send(result);
+        })
 
         // users api
         app.get('/user', verifyJWT, async (req, res) => {
