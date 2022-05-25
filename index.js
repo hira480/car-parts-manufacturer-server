@@ -3,6 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express()
 const port = process.env.PORT || 5000;
@@ -37,7 +38,7 @@ async function run() {
         const orderCollection = client.db('car_parts').collection('orders');
         const userCollection = client.db('car_parts').collection('users');
 
-        // Admin api
+        // Verify admin function
         const verifyAdmin = async (req, res, next) => {
             const requester = req.decoded.email;
             const requestAccount = await userCollection.findOne({ email: requester });
@@ -48,6 +49,19 @@ async function run() {
                 res.status(403).send({ message: 'forbidden' })
             }
         };
+
+        // payment api
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const part = req.body;
+            const price = part.price;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret });
+        });
 
         // parts api
         app.get('/part', async (req, res) => {
@@ -100,6 +114,13 @@ async function run() {
             const ordered = await orderCollection.find(query).toArray();
             res.send(ordered);
         });
+
+        // app.get('/ordered/:id',verifyJWT, async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const ordered = await orderCollection.findOne(query);
+        //     res.send(ordered);
+        // });
 
         app.get('/ordered/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
