@@ -66,12 +66,27 @@ async function run() {
             res.send(result);
         });
 
+        // order api for indivisual user
+        app.get('/ordered', async (req, res) => {
+            const client = req.query.client;
+            const query = { client: client };
+            const ordered = await orderCollection.find(query).toArray();
+            res.send(ordered);
+        });
+
+        app.get('/ordered/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const ordered = await orderCollection.findOne(query);
+            res.send(ordered);
+        });
+
         // order api
         app.post('/ordered', async (req, res) => {
             const ordered = req.body;
             const result = await orderCollection.insertOne(ordered);
             res.send(result);
-        })
+        });
 
         // users api
         app.get('/user', verifyJWT, async (req, res) => {
