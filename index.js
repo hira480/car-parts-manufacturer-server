@@ -116,6 +116,14 @@ async function run() {
             res.send(ordered);
         });
 
+        // order cancel api
+        app.delete('/ordered/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        });
+
         // insert payment data to paymentCollection and abdate orderCollection status
         app.patch('/ordered/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
