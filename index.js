@@ -37,6 +37,7 @@ async function run() {
         const partCollection = client.db('car_parts').collection('parts');
         const orderCollection = client.db('car_parts').collection('orders');
         const userCollection = client.db('car_parts').collection('users');
+        const paymentCollection = client.db('car_parts').collection('payments');
 
         // Verify admin function
         const verifyAdmin = async (req, res, next) => {
@@ -115,12 +116,21 @@ async function run() {
             res.send(ordered);
         });
 
-        // app.get('/ordered/:id',verifyJWT, async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const ordered = await orderCollection.findOne(query);
-        //     res.send(ordered);
-        // });
+        // insert payment data to paymentCollection and abdate orderCollection status
+        app.patch('/ordered/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const result = await paymentCollection.insertOne(payment);
+            const updateOrdered = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
+        });
 
         app.get('/ordered/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
