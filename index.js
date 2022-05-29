@@ -38,6 +38,7 @@ async function run() {
         const orderCollection = client.db('car_parts').collection('orders');
         const userCollection = client.db('car_parts').collection('users');
         const paymentCollection = client.db('car_parts').collection('payments');
+        const reviewCollection = client.db('car_parts').collection('reviews');
 
         // Verify admin function
         const verifyAdmin = async (req, res, next) => {
@@ -190,6 +191,20 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.send({ result, token });
         });
+
+        // review api
+        app.get('/review', async (req, res) => {
+            const query = {};
+            const cursor = reviewCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        });
+
+        app.post('/review', verifyJWT, async (req, res) => {
+            const newReview = req.body;
+            const result = await reviewCollection.insertOne(newReview);
+            res.send(result);
+        })
     }
     finally {
 
