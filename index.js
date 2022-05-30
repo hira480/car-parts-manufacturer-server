@@ -39,6 +39,7 @@ async function run() {
         const userCollection = client.db('car_parts').collection('users');
         const paymentCollection = client.db('car_parts').collection('payments');
         const reviewCollection = client.db('car_parts').collection('reviews');
+        const profileCollection = client.db('car_parts').collection('profiles');
 
         // Verify admin function
         const verifyAdmin = async (req, res, next) => {
@@ -204,7 +205,15 @@ async function run() {
             const newReview = req.body;
             const result = await reviewCollection.insertOne(newReview);
             res.send(result);
-        })
+        });
+
+        // // profile api
+        // app.get('/profile', async (req, res) => {
+        //     const query = {};
+        //     const cursor = profileCollection.find(query);
+        //     const profile = await cursor.toArray();
+        //     res.send(profile);
+        // });
     }
     finally {
 
