@@ -111,7 +111,7 @@ async function run() {
         });
 
         // order api for indivisual user
-        app.get('/ordered', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/ordered', verifyJWT, async (req, res) => {
             const client = req.query.client;
             const query = { client: client };
             const ordered = await orderCollection.find(query).toArray();
