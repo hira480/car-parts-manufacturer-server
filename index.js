@@ -3,6 +3,8 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+// const nodemailer = require('nodemailer');
+// const mg = require('nodemailer-mailgun-transport');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express()
@@ -112,10 +114,18 @@ async function run() {
 
         // order api for indivisual user
         app.get('/ordered', verifyJWT, async (req, res) => {
-            const client = req.query.client;
-            const query = { client: client };
-            const ordered = await orderCollection.find(query).toArray();
-            res.send(ordered);
+            const email = req.query.email;
+
+            if (email) {
+                const query = { email: email };
+                const ordered = await orderCollection.find(query).toArray();
+                res.send(ordered);
+            }
+            else {
+                const allOrders = await orderCollection.find().toArray();
+                res.send(allOrders);
+            }
+
         });
 
         // order cancel api
@@ -152,6 +162,7 @@ async function run() {
         // order api
         app.post('/ordered', async (req, res) => {
             const ordered = req.body;
+
             const result = await orderCollection.insertOne(ordered);
             res.send(result);
         });
